@@ -226,6 +226,7 @@ void clear( const ColorA &color, bool clearDepthBuffer )
 		glClear( GL_COLOR_BUFFER_BIT );
 }
 
+#if ! defined( CINDER_GLES )
 void enableVerticalSync( bool enable )
 {
 #if defined( CINDER_MAC )
@@ -360,33 +361,13 @@ void setMatricesWindow( int screenWidth, int screenHeight, bool originUpperLeft 
 {
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
-#if defined( CINDER_GLES )
-	if( originUpperLeft )
-		glOrthof( 0, screenWidth, screenHeight, 0, -1.0f, 1.0f );
-	else
-		glOrthof( 0, screenWidth, 0, screenHeight, -1.0f, 1.0f );
-#else	
 	if( originUpperLeft )
 		glOrtho( 0, screenWidth, screenHeight, 0, -1.0f, 1.0f );
 	else
 		glOrtho( 0, screenWidth, 0, screenHeight, -1.0f, 1.0f );
-#endif
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 	glViewport( 0, 0, screenWidth, screenHeight );
-}
-
-Area getViewport()
-{
-	GLint params[4];
-	glGetIntegerv( GL_VIEWPORT, params );
-	Area result;
-	return Area( params[0], params[1], params[0] + params[2], params[1] + params[3] );
-}
-
-void setViewport( const Area &area )
-{
-	glViewport( area.x1, area.y1, ( area.x2 - area.x1 ), ( area.y2 - area.y1 ) );
 }
 
 void translate( const Vec2f &pos )
@@ -420,6 +401,21 @@ void rotate( const Quatf &quat )
 		glRotatef( toDegrees( angle ), axis.x, axis.y, axis.z );
 }
 
+#endif // ! defined( CINDER_GLES )
+
+Area getViewport()
+{
+	GLint params[4];
+	glGetIntegerv( GL_VIEWPORT, params );
+	Area result;
+	return Area( params[0], params[1], params[0] + params[2], params[1] + params[3] );
+}
+
+void setViewport( const Area &area )
+{
+	glViewport( area.x1, area.y1, ( area.x2 - area.x1 ), ( area.y2 - area.y1 ) );
+}
+
 void enableAlphaBlending( bool premultiplied )
 {
 	glEnable( GL_BLEND );
@@ -440,6 +436,8 @@ void enableAdditiveBlending()
 	glBlendFunc( GL_SRC_ALPHA, GL_ONE );	
 }
 
+#if ! defined( CINDER_GLES )
+
 void enableAlphaTest( float value, int func )
 {
 	glEnable( GL_ALPHA_TEST );
@@ -451,7 +449,6 @@ void disableAlphaTest()
 	glDisable( GL_ALPHA_TEST );
 }
 
-#if ! defined( CINDER_GLES )
 void enableWireframe()
 {
 	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -461,7 +458,8 @@ void disableWireframe()
 {
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 }
-#endif
+
+#endif // ! defined( CINDER_GLES )
 
 void disableDepthRead()
 {
@@ -485,6 +483,8 @@ void disableDepthWrite()
 {
 	glDepthMask( GL_FALSE );
 }
+
+#if ! defined( CINDER_GLES )
 
 void drawLine( const Vec2f &start, const Vec2f &end )
 {
@@ -1176,7 +1176,6 @@ void draw( const Shape2d &shape2d, float approximationScale )
 	glDisableClientState( GL_VERTEX_ARRAY );	
 }
 
-
 void drawSolid( const Path2d &path2d, float approximationScale )
 {
 	draw( Triangulator( path2d ).calcMesh() );
@@ -1220,16 +1219,7 @@ void draw( const TriMesh2d &mesh )
 	}
 	else
 		glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-#if defined ( CINDER_GLES )
-	GLushort * indices = new GLushort[ mesh.getIndices().size() ];
-	for ( size_t i = 0; i < mesh.getIndices().size(); i++ ) {
-		indices[ i ] = static_cast<GLushort>( mesh.getIndices()[ i ] );
-	}
-	glDrawElements( GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_SHORT, (const GLvoid*)indices );
-	delete [] indices;
-#else
 	glDrawElements( GL_TRIANGLES, mesh.getNumIndices(), GL_UNSIGNED_INT, &(mesh.getIndices()[0]) );
-#endif
 
 	glDisableClientState( GL_VERTEX_ARRAY );
 	glDisableClientState( GL_NORMAL_ARRAY );
@@ -1262,21 +1252,9 @@ void drawRange( const TriMesh2d &mesh, size_t startTriangle, size_t triangleCoun
 	}
 	else
 		glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-
-#if defined ( CINDER_GLES )
-	size_t max = math<size_t>::min( mesh.getNumIndices(), 0xFFFF );
-	size_t start = math<size_t>::min( startTriangle * 3, max );
-	size_t count = math<size_t>::min( max - start, triangleCount * 3 );
-	GLushort * indices = new GLushort[ max ];
-	for ( size_t i = 0; i < max; i++ ) {
-		indices[ i ] = static_cast<GLushort>( mesh.getIndices()[ i ] );
-	}
-	glDrawElements( GL_TRIANGLES, count, GL_UNSIGNED_SHORT, (const GLvoid*)( indices + start ) );
-	delete [] indices;
-#else
+		
 	glDrawRangeElements( GL_TRIANGLES, 0, mesh.getNumVertices(), triangleCount * 3, GL_UNSIGNED_INT, &(mesh.getIndices()[startTriangle*3]) );
-#endif
-	
+
 	glDisableClientState( GL_VERTEX_ARRAY );
 	glDisableClientState( GL_NORMAL_ARRAY );
 	glDisableClientState( GL_COLOR_ARRAY );
@@ -1313,16 +1291,7 @@ void draw( const TriMesh &mesh )
 	}
 	else
 		glDisableClientState( GL_TEXTURE_COORD_ARRAY );
-#if defined ( CINDER_GLES )
-	GLushort * indices = new GLushort[ mesh.getIndices().size() ];
-	for ( size_t i = 0; i < mesh.getIndices().size(); i++ ) {
-		indices[ i ] = static_cast<GLushort>( mesh.getIndices()[ i ] );
-	}
-	glDrawElements( GL_TRIANGLES, mesh.getIndices().size(), GL_UNSIGNED_SHORT, (const GLvoid*)indices );
-	delete [] indices;
-#else
 	glDrawElements( GL_TRIANGLES, mesh.getNumIndices(), GL_UNSIGNED_INT, &(mesh.getIndices()[0]) );
-#endif
 
 	glDisableClientState( GL_VERTEX_ARRAY );
 	glDisableClientState( GL_NORMAL_ARRAY );
@@ -1361,19 +1330,7 @@ void drawRange( const TriMesh &mesh, size_t startTriangle, size_t triangleCount 
 	else
 		glDisableClientState( GL_TEXTURE_COORD_ARRAY );
 		
-#if defined ( CINDER_GLES )
-	size_t max = math<size_t>::min( mesh.getNumIndices(), 0xFFFF );
-	size_t start = math<size_t>::min( startTriangle * 3, max );
-	size_t count = math<size_t>::min( max - start, triangleCount * 3 );
-	GLushort * indices = new GLushort[ max ];
-	for ( size_t i = 0; i < max; i++ ) {
-		indices[ i ] = static_cast<GLushort>( mesh.getIndices()[ i ] );
-	}
-	glDrawElements( GL_TRIANGLES, count, GL_UNSIGNED_SHORT, (const GLvoid*)( indices + start ) );
-	delete [] indices;
-#else
 	glDrawRangeElements( GL_TRIANGLES, 0, mesh.getNumVertices(), triangleCount * 3, GL_UNSIGNED_INT, &(mesh.getIndices()[startTriangle*3]) );
-#endif
 
 	glDisableClientState( GL_VERTEX_ARRAY );
 	glDisableClientState( GL_NORMAL_ARRAY );
@@ -1381,7 +1338,6 @@ void drawRange( const TriMesh &mesh, size_t startTriangle, size_t triangleCount 
 	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
 }
 
-#if ! defined ( CINDER_GLES )
 void draw( const VboMesh &vbo )
 {
 	if( vbo.getNumIndices() > 0 )
@@ -1402,7 +1358,7 @@ void drawRange( const VboMesh &vbo, size_t startIndex, size_t indexCount, int ve
 	vbo.bindAllData();
 	
 	glDrawRangeElements( vbo.getPrimitiveType(), vertexStart, vertexEnd, indexCount, GL_UNSIGNED_INT, (GLvoid*)( sizeof(uint32_t) * startIndex ) );
-	
+
 	gl::VboMesh::unbindBuffers();
 	vbo.disableClientStates();
 }
@@ -1416,8 +1372,6 @@ void drawArrays( const VboMesh &vbo, GLint first, GLsizei count )
 	gl::VboMesh::unbindBuffers();
 	vbo.disableClientStates();
 }
-#endif
-
 
 void drawBillboard( const Vec3f &pos, const Vec2f &scale, float rotationDegrees, const Vec3f &bbRight, const Vec3f &bbUp )
 {
@@ -1535,6 +1489,8 @@ void drawStringRight( const std::string &str, const Vec2f &pos, const ColorA &co
 	drawStringHelper( str, pos, color, font, 1 );
 }
 
+#endif // ! defined( CINDER_GLES )
+
 ///////////////////////////////////////////////////////////////////////////////
 // SaveTextureBindState
 SaveTextureBindState::SaveTextureBindState( GLint target )
@@ -1586,6 +1542,8 @@ ClientBoolState::ClientBoolState( GLint target )
 #endif
 }
 
+#if ! defined( CINDER_GLES )
+
 ClientBoolState::~ClientBoolState()
 {
 	if( mOldValue )
@@ -1607,13 +1565,15 @@ SaveColorState::~SaveColorState()
 	glColor4f( mOldValues[0], mOldValues[1], mOldValues[2], mOldValues[3] );
 }
 
+#endif // ! defined( CINDER_GLES )
+
 ///////////////////////////////////////////////////////////////////////////////
 // SaveFramebufferBinding
 SaveFramebufferBinding::SaveFramebufferBinding()
 {
 #if defined( CINDER_GLES )
-	glGetIntegerv( GL_FRAMEBUFFER_BINDING_OES, &mOldValue );
-#else	
+	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &mOldValue );
+#else
 	glGetIntegerv( GL_FRAMEBUFFER_BINDING_EXT, &mOldValue );
 #endif
 }
@@ -1621,7 +1581,7 @@ SaveFramebufferBinding::SaveFramebufferBinding()
 SaveFramebufferBinding::~SaveFramebufferBinding()
 {
 #if defined( CINDER_GLES )
-	glBindFramebufferOES( GL_FRAMEBUFFER_OES, mOldValue );
+	glBindFramebuffer( GL_FRAMEBUFFER, mOldValue );
 #else
 	glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, mOldValue );
 #endif

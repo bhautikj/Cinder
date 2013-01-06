@@ -31,7 +31,7 @@
 	#include "cinder/gl/GLee.h"
 #else
 	#define CINDER_GLES
-	#define CINDER_GLES1
+	#define CINDER_GLES2
 #endif
 
 #include "cinder/Exception.h"
@@ -50,8 +50,8 @@
 	#undef max
 	#include <gl/gl.h>
 #elif defined( CINDER_COCOA_TOUCH )
-	#include <OpenGLES/ES1/gl.h>
-	#include <OpenGLES/ES1/glext.h>
+	#include <OpenGLES/ES2/gl.h>
+	#include <OpenGLES/ES2/glext.h>
 #elif defined( CINDER_MAC )
 	#include <OpenGL/gl.h>
 #endif
@@ -167,7 +167,6 @@ inline void texCoord( const Vec2f &v ) { glTexCoord2f( v.x, v.y ); }
 inline void texCoord( float x, float y, float z ) { glTexCoord3f( x, y, z ); }
 //! Used between calls to gl::begin() and gl::end(), sets the 3D texture coordinate for the next vertex.
 inline void texCoord( const Vec3f &v ) { glTexCoord3f( v.x, v.y, v.z ); }
-#endif // ! defined( CINDER_GLES )
 //! Sets the current color and the alpha value to 1.0
 inline void color( float r, float g, float b ) { glColor4f( r, g, b, 1.0f ); }
 //! Sets the current color and alpha value
@@ -180,6 +179,7 @@ inline void color( const ColorA8u &c ) { glColor4ub( c.r, c.g, c.b, c.a ); }
 inline void color( const Color &c ) { glColor4f( c.r, c.g, c.b, 1.0f ); }
 //! Sets the current color and alpha value
 inline void color( const ColorA &c ) { glColor4f( c.r, c.g, c.b, c.a ); }
+#endif // ! defined( CINDER_GLES )
 
 //! Enables the OpenGL State \a state. Equivalent to calling to glEnable( state );
 inline void enable( GLenum state ) { glEnable( state ); }
@@ -193,13 +193,13 @@ void disableAlphaBlending();
 //! Enables alpha blending and selects a \c BlendFunc for additive blending
 void enableAdditiveBlending();
 
-/** \brief Enables alpha testing and sets the \c AlphaFunc to test for values which are \a func than \a value, which should be in the range [0, 1.0]. 
+#if ! defined( CINDER_GLES )
+/** \brief Enables alpha testing and sets the \c AlphaFunc to test for values which are \a func than \a value, which should be in the range [0, 1.0].
  *  Possible values for \a func include <tt>GL_NEVER, GL_LESS, GL_EQUAL, GL_LEQUAL, GL_GREATER, GL_NOTEQUAL, GL_GEQUAL and GL_ALWAYS</tt>. **/
 void enableAlphaTest( float value = 0.5f, int func = GL_GREATER );
 //! Disables alpha testing
 void disableAlphaTest();
 
-#if ! defined( CINDER_GLES )
 //! Enables wireframe drawing by setting the \c PolygonMode to \c GL_LINE.
 void enableWireframe();
 //! Disables wireframe drawing.
@@ -273,6 +273,8 @@ void draw( const class Path2d &path2d, float approximationScale = 1.0f );
 //! Draws a Shape2d \a shape2d using approximation scale \a approximationScale. 1.0 corresponds to screenspace, 2.0 is double screen resolution, etc
 void draw( const class Shape2d &shape2d, float approximationScale = 1.0f );
 
+#if ! defined( CINDER_GLES )
+
 //! Draws a solid (filled) Path2d \a path2d using approximation scale \a approximationScale. 1.0 corresponds to screenspace, 2.0 is double screen resolution, etc. Performance warning: This routine tesselates the polygon into triangles. Consider using Triangulator directly.
 void drawSolid( const class Path2d &path2d, float approximationScale = 1.0f );
 //! Draws a solid (filled) Shape2d \a shape2d using approximation scale \a approximationScale. 1.0 corresponds to screenspace, 2.0 is double screen resolution, etc. Performance warning: This routine tesselates the polygon into triangles. Consider using Triangulator directly.
@@ -289,16 +291,14 @@ void draw( const TriMesh &mesh );
 //! Draws a range of triangles starting with triangle # \a startTriangle and a count of \a triangleCount from cinder::TriMesh \a mesh at the origin.
 void drawRange( const TriMesh &mesh, size_t startTriangle, size_t triangleCount );
 //! Draws a cinder::gl::VboMesh \a mesh at the origin.
-
-#if ! defined ( CINDER_GLES )
 void draw( const VboMesh &vbo );
 //! Draws a range of vertices and elements of cinder::gl::VboMesh \a mesh at the origin. Default parameters for \a vertexStart and \a vertexEnd imply the VboMesh's full range of vertices.
 void drawRange( const VboMesh &vbo, size_t startIndex, size_t indexCount, int vertexStart = -1, int vertexEnd = -1 );
 //! Draws a range of elements from a cinder::gl::VboMesh \a vbo.
 void drawArrays( const VboMesh &vbo, GLint first, GLsizei count );
 //!	Draws a textured quad of size \a scale that is aligned with the vectors \a bbRight and \a bbUp at \a pos, rotated by \a rotationDegrees around the vector orthogonal to \a bbRight and \a bbUp.
-#endif
-	
+#endif // ! defined( CINDER_GLES )
+
 void drawBillboard( const Vec3f &pos, const Vec2f &scale, float rotationDegrees, const Vec3f &bbRight, const Vec3f &bbUp );
 //! Draws \a texture on the XY-plane
 void draw( const Texture &texture );
@@ -389,11 +389,11 @@ inline void glTexCoord4f( const cinder::Vec4f &v ) { glTexCoord4f( v.x, v.y, v.z
 //inline void glMultiTexCoord2f( GLenum target, const cinder::Vec2f &v ) { glMultiTexCoord2f( target, v.x, v.y ); }
 //inline void glMultiTexCoord3f( GLenum target, const cinder::Vec3f &v ) { glMultiTexCoord3f( target, v.x, v.y, v.z ); }
 //inline void glMultiTexCoord4f( GLenum target, const cinder::Vec4f &v ) { glMultiTexCoord4f( target, v.x, v.y, v.z, v.w ); }
-#endif // ! defined( CINDER_GLES )
 inline void glTranslatef( const cinder::Vec3f &v ) { glTranslatef( v.x, v.y, v.z ); }
 inline void glScalef( const cinder::Vec3f &v ) { glScalef( v.x, v.y, v.z ); }
 inline void glRotatef( float angle, const cinder::Vec3f &v ) { glRotatef( angle, v.x, v.y, v.z ); }
 inline void glRotatef( const cinder::Quatf &quat ) { cinder::Vec3f axis; float angle; quat.getAxisAngle( &axis, &angle ); glRotatef( cinder::toDegrees( angle ), axis.x, axis.y, axis.z ); }
 inline void glMultMatrixf( const cinder::Matrix44f &m ) { glMultMatrixf( m.m ); }
 inline void glLoadMatrixf( const cinder::Matrix44f &m ) { glLoadMatrixf( m.m ); }
+#endif // ! defined( CINDER_GLES )
 //@}
