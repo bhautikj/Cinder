@@ -678,6 +678,8 @@
 		43F78EF81516DAE200EB63B5 /* Json.h in Headers */ = {isa = PBXBuildFile; fileRef = 43F78EF51516DAE200EB63B5 /* Json.h */; };
 		5391FD680E957646002A13D5 /* KeyEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 5391FD670E957646002A13D5 /* KeyEvent.h */; };
 		5391FE660E95CB01002A13D5 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D6A5FE840307C02AAC07 /* AppKit.framework */; };
+		71EFE2C117605AC0006D468C /* GlslProg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00D9A07B0EA57C3F00FF5AEB /* GlslProg.cpp */; };
+		71EFE2C317605AC1006D468C /* GlslProg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 00D9A07B0EA57C3F00FF5AEB /* GlslProg.cpp */; };
 		C70E19FF106AA38700E63577 /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = C70E19FE106AA38700E63577 /* Buffer.h */; };
 		C70E1A03106AA39D00E63577 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C70E1A01106AA39D00E63577 /* Buffer.cpp */; };
 		C727BFE5121B3AE600192073 /* Capture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 007438400EA7924F005DD3E6 /* Capture.cpp */; };
@@ -2280,6 +2282,7 @@
 				1161C977165C7DFB00268A5E /* ImageTargetFileQuartz.cpp in Sources */,
 				1161C979165C847200268A5E /* ImageSourceFileQuartz.cpp in Sources */,
 				0078261A171CD9D800B47F9C /* ConvexHull.cpp in Sources */,
+				71EFE2C117605AC0006D468C /* GlslProg.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2384,6 +2387,7 @@
 				1161C978165C7DFC00268A5E /* ImageTargetFileQuartz.cpp in Sources */,
 				1161C97A165C847400268A5E /* ImageSourceFileQuartz.cpp in Sources */,
 				0078261B171CD9D800B47F9C /* ConvexHull.cpp in Sources */,
+				71EFE2C317605AC1006D468C /* GlslProg.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

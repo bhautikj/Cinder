@@ -1370,7 +1370,6 @@ void drawRange( const TriMesh &mesh, size_t startTriangle, size_t triangleCount 
 	glDisableClientState( GL_TEXTURE_COORD_ARRAY );
 }
 
-#if ! defined ( CINDER_GLES )
 void draw( const VboMesh &vbo )
 {
 	if( vbo.getNumIndices() > 0 )
@@ -1378,6 +1377,8 @@ void draw( const VboMesh &vbo )
 	else
 		drawArrays( vbo, 0, vbo.getNumVertices() );
 }
+
+#if ! defined ( CINDER_GLES )
 
 void drawRange( const VboMesh &vbo, size_t startIndex, size_t indexCount, int vertexStart, int vertexEnd )
 {
