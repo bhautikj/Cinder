@@ -22,6 +22,7 @@
 
 #include "cinder/Rect.h"
 #include "cinder/Area.h"
+#include "cinder/MatrixAffine2.h"
 
 #include <limits>
 using std::numeric_limits;
@@ -177,9 +178,40 @@ void RectT<T>::scale( T s )
 }
 
 template<typename T>
+void RectT<T>::scale( const Vec2<T> &scale )
+{
+	x1 *= scale.x;
+	y1 *= scale.y;
+	x2 *= scale.x;
+	y2 *= scale.y;
+}
+
+template<typename T>
 RectT<T> RectT<T>::scaled( T s ) const
 {
 	return RectT<T>( x1 * s, y1 * s, x2 * s, y2 * s );
+}
+
+template<typename T>
+RectT<T> RectT<T>::scaled( const Vec2<T> &scale ) const
+{
+	return RectT<T>( x1 * scale.x, y1 * scale.y, x2 * scale.x, y2 * scale.y );
+}
+
+template<typename T>
+RectT<T> RectT<T>::transformCopy( const MatrixAffine2<T> &matrix ) const
+{
+	RectT<T> result;
+	result.x1 = numeric_limits<T>::max();
+	result.x2 = -numeric_limits<T>::max();
+	result.y1 = numeric_limits<T>::max();
+	result.y2 = -numeric_limits<T>::max();
+	result.include( matrix.transformPoint( Vec2<T>( x1, y1 ) ) );
+	result.include( matrix.transformPoint( Vec2<T>( x2, y1 ) ) );
+	result.include( matrix.transformPoint( Vec2<T>( x2, y2 ) ) );
+	result.include( matrix.transformPoint( Vec2<T>( x1, y2 ) ) );
+	
+	return result;
 }
 
 template<typename T>

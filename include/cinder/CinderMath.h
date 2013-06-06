@@ -25,11 +25,12 @@
 #pragma once
 
 #include "cinder/Cinder.h"
-#include <math.h>
-#include <limits.h>
+#include <cmath>
+#include <climits>
 #if defined( CINDER_MSW )
-#undef min
-#undef max
+	#undef min
+	#undef max
+	#include <float.h>
 #endif
 
 namespace cinder {
@@ -40,7 +41,7 @@ struct math
 	static T	acos  (T x)		{return ::acos (double(x));}
 	static T	asin  (T x)		{return ::asin (double(x));}
 	static T	atan  (T x)		{return ::atan (double(x));}
-	static T	atan2 (T x, T y)	{return ::atan2 (double(x), double(y));}
+	static T	atan2 (T y, T x)	{return ::atan2 (double(y), double(x));}
 	static T	cos   (T x)		{return ::cos (double(x));}
 	static T	sin   (T x)		{return ::sin (double(x));}
 	static T	tan   (T x)		{return ::tan (double(x));}
@@ -60,7 +61,7 @@ struct math
 	static T	pow   (T x, T y)	{return ::pow (double(x), double(y));}
 	static T	sqrt  (T x)		{return ::sqrt (double(x));}
 #if defined( _MSC_VER )
-	static T	cbrt( T x )		{ return ::pow( x, 1.0 / 3.0 ); }
+	static T	cbrt( T x )		{ return ( x > 0 ) ? (::pow( x, 1.0 / 3.0 )) : (- ::pow( -x, 1.0 / 3.0 ) ); }
 #else
 	static T	cbrt( T x )		{ return ::cbrt( x ); }
 #endif
@@ -82,7 +83,7 @@ struct math<float>
 	static float	acos  (float x)			{return ::acosf (x);}
 	static float	asin  (float x)			{return ::asinf (x);}
 	static float	atan  (float x)			{return ::atanf (x);}
-	static float	atan2 (float x, float y)	{return ::atan2f (x, y);}
+	static float	atan2 (float y, float x)	{return ::atan2f (y, x);}
 	static float	cos   (float x)			{return ::cosf (x);}
 	static float	sin   (float x)			{return ::sinf (x);}
 	static float	tan   (float x)			{return ::tanf (x);}
@@ -96,7 +97,7 @@ struct math<float>
 	static float	pow   (float x, float y)	{return ::powf (x, y);}
 	static float	sqrt  (float x)			{return ::sqrtf (x);}
 #if defined( _MSC_VER )
-	static float	cbrt  (float x)			{return ::powf( x, 1.0f / 3.0f ); }
+	static float	cbrt( float x )		{ return ( x > 0 ) ? (::powf( x, 1.0f / 3.0f )) : (- ::powf( -x, 1.0f / 3.0f ) ); }
 #else
 	static float	cbrt  (float x)			{ return ::cbrtf( x ); }	
 #endif
@@ -245,3 +246,10 @@ template<typename T>
 int solveCubic( T a, T b, T c, T d, T result[3] );
 
 } // namespace cinder
+
+#if defined( _MSC_VER )
+namespace std {
+	inline bool isfinite( float arg ) { return _finite( arg ) != 0; }
+	inline bool isfinite( double arg ) { return _finite( arg ) != 0; }
+}
+#endif
