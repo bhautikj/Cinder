@@ -144,7 +144,7 @@ void EarthquakeApp::keyDown( KeyEvent event )
 		while( tr.nextTile() ) {
 			draw();
 		}
-		writeImage( getHomeDirectory() + "output.png", tr.getSurface() );
+		writeImage( getHomeDirectory() / "output.png", tr.getSurface() );
 	}
 }
 
@@ -235,7 +235,7 @@ void EarthquakeApp::draw()
 	}
 	
 	if( mSaveFrames ){
-		writeImage( getHomeDirectory() + "CinderScreengrabs" + getPathSeparator() + "Highoutput_" + toString( mCurrentFrame ) + ".png", copyWindowSurface() );
+		writeImage( getHomeDirectory() / "CinderScreengrabs" / ( "Highoutput_" + toString( mCurrentFrame ) + ".png" ), copyWindowSurface() );
 		mCurrentFrame++;
 	}
 }
@@ -255,7 +255,6 @@ void EarthquakeApp::parseEarthquakes( const string &url )
 		
 		mEarth.addQuake( locationVector.x, locationVector.y, magnitude, title );		
 	}
-	console() << xml << std::endl;
 	
 	//mEarth.addQuake( 37.7f, -122.0f, 8.6f, "San Francisco" );
 }

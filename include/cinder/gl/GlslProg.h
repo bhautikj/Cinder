@@ -37,14 +37,42 @@
 
 namespace cinder { namespace gl {
 
+class GlslProg;
+typedef std::shared_ptr<GlslProg>	GlslProgRef;
+
 //! Represents an OpenGL GLSL program. \ImplShared
 class GlslProg {
   public: 
 	GlslProg() {}
-	GlslProg( DataSourceRef vertexShader, DataSourceRef fragmentShader = DataSourceRef(), DataSourceRef geometryShader = DataSourceRef(), 
-        GLint geometryInputType = GL_POINTS, GLint geometryOutputType = GL_TRIANGLES, GLint geometryOutputVertices = 0);
+
+#if defined( CINDER_GLES )
+	GlslProg( DataSourceRef vertexShader, DataSourceRef fragmentShader = DataSourceRef() );
+	GlslProg( const char *vertexShader, const char *fragmentShader = 0 );
+  
+  static GlslProgRef create( DataSourceRef vertexShader, DataSourceRef fragmentShader = DataSourceRef() )
+  {
+    return std::shared_ptr<GlslProg>( new GlslProg ( vertexShader, fragmentShader) );
+  }
+  
+  static GlslProgRef create( const char *vertexShader, const char *fragmentShader = 0 )
+  {
+    return std::shared_ptr<GlslProg>( new GlslProg ( vertexShader, fragmentShader) );
+  }
+
+#else
+	GlslProg( DataSourceRef vertexShader, DataSourceRef fragmentShader = DataSourceRef(), DataSourceRef geometryShader = DataSourceRef(), GLint geometryInputType = GL_POINTS, GLint geometryOutputType = GL_TRIANGLES, GLint geometryOutputVertices = 0 );
     
-	GlslProg( const char *vertexShader, const char *fragmentShader = 0, const char *geometryShader = 0, GLint geometryInputType = GL_POINTS, GLint geometryOutputType = GL_TRIANGLES, GLint geometryOutputVertices = 0);
+	GlslProg( const char *vertexShader, const char *fragmentShader = 0, const char *geometryShader = 0, GLint geometryInputType = GL_POINTS, GLint geometryOutputType = GL_TRIANGLES, GLint geometryOutputVertices = 0 );
+
+	static GlslProgRef create( DataSourceRef vertexShader, DataSourceRef fragmentShader = DataSourceRef(), DataSourceRef geometryShader = DataSourceRef(), 
+		GLint geometryInputType = GL_POINTS, GLint geometryOutputType = GL_TRIANGLES, GLint geometryOutputVertices = 0 )
+		{ return std::shared_ptr<GlslProg>( new GlslProg( vertexShader, fragmentShader, geometryShader, geometryInputType, geometryOutputType, geometryOutputVertices ) ); }
+
+	static GlslProgRef create( const char *vertexShader, const char *fragmentShader = 0, const char *geometryShader = 0,
+		GLint geometryInputType = GL_POINTS, GLint geometryOutputType = GL_TRIANGLES, GLint geometryOutputVertices = 0 )
+		{ return std::shared_ptr<GlslProg>( new GlslProg( vertexShader, fragmentShader, geometryShader, geometryInputType, geometryOutputType, geometryOutputVertices ) ); }
+
+#endif
 
 	void			bind() const;
 	static void		unbind();
@@ -61,6 +89,7 @@ class GlslProg {
 	void	uniform( const std::string &name, const Vec4f &data );
 	void	uniform( const std::string &name, const Color &data );
 	void	uniform( const std::string &name, const ColorA &data );
+	void	uniform( const std::string &name, const Matrix22f &data, bool transpose = false );
 	void	uniform( const std::string &name, const Matrix33f &data, bool transpose = false );
 	void	uniform( const std::string &name, const Matrix44f &data, bool transpose = false );
 	void	uniform( const std::string &name, const float *data, int count );

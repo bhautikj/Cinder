@@ -31,9 +31,12 @@
 	#include "cinder/gl/GLee.h"
 #else
 	#define CINDER_GLES
-	#define CINDER_GLES1
 #endif
 
+// Need to declare this independently
+#define CINDER_GLES2
+
+#include "cinder/Exception.h"
 #include "cinder/Quaternion.h"
 #include "cinder/Matrix.h"
 #include "cinder/Vector.h"
@@ -49,8 +52,8 @@
 	#undef max
 	#include <gl/gl.h>
 #elif defined( CINDER_COCOA_TOUCH )
-	#include <OpenGLES/ES1/gl.h>
-	#include <OpenGLES/ES1/glext.h>
+	#include <OpenGLES/ES2/gl.h>
+	#include <OpenGLES/ES2/glext.h>
 #elif defined( CINDER_MAC )
 	#include <OpenGL/gl.h>
 #endif
@@ -60,6 +63,8 @@ namespace cinder {
 	class Camera; class TriMesh2d; class TriMesh; class Sphere;
 	namespace gl {
 		 class VboMesh; class Texture;
+		 typedef std::shared_ptr<Texture>	TextureRef;
+ 		 typedef std::shared_ptr<VboMesh>	VboMeshRef;
 	}
 } // namespace cinder
 
@@ -132,9 +137,9 @@ inline void translate( float x, float y, float z ) { translate( Vec3f( x, y, z )
 //! Produces a scale by \a scale in the current matrix.
 void scale( const Vec3f &scl );
 //! Produces a scale by \a scl in the current matrix.
-inline void scale( const Vec2f &scl ) { scale( Vec3f( scl.x, scl.y, 0 ) ); }
+inline void scale( const Vec2f &scl ) { scale( Vec3f( scl.x, scl.y, 1 ) ); }
 //! Produces a scale by \a x and \a y in the current matrix.
-inline void scale( float x, float y ) { scale( Vec3f( x, y, 0 ) ); }
+inline void scale( float x, float y ) { scale( Vec3f( x, y, 1 ) ); }
 //! Produces a scale by \a x, \a y and \a z in the current matrix.
 inline void scale( float x, float y, float z ) { scale( Vec3f( x, y, z ) ); }
 
@@ -146,15 +151,26 @@ void rotate( const Quatf &quat );
 inline void rotate( float degrees ) { rotate( Vec3f( 0, 0, degrees ) ); }
 
 #if ! defined( CINDER_GLES )
-//! Used between calls to \c glBegin and \c glEnd, appends a vertex to the current primitive.
+//! Equivalent to glBegin() in immediate mode
+inline void begin( GLenum mode ) { glBegin( mode ); }
+//! Equivalent to glEnd() in immediate mode
+inline void end() { glEnd(); }
+//! Used between calls to gl::begin() and \c gl::end(), appends a vertex to the current primitive.
 inline void vertex( const Vec2f &v ) { glVertex2fv( &v.x ); }
-//! Used between calls to \c glBegin and \c glEnd, appends a vertex to the current primitive.
+//! Used between calls to gl::begin() and \c gl::end(), appends a vertex to the current primitive.
 inline void vertex( float x, float y ) { glVertex2f( x, y ); }
-//! Used between calls to \c glBegin and \c glEnd, appends a vertex to the current primitive.
+//! Used between calls to gl::begin() and \c gl::end(), appends a vertex to the current primitive.
 inline void vertex( const Vec3f &v ) { glVertex3fv( &v.x ); }
-//! Used between calls to \c glBegin and \c glEnd, appends a vertex to the current primitive.
+//! Used between calls to gl::begin() and \c gl::end(), appends a vertex to the current primitive.
 inline void vertex( float x, float y, float z ) { glVertex3f( x, y, z ); }
-#endif // ! defined( CINDER_GLES )
+//! Used between calls to gl::begin() and gl::end(), sets the 2D texture coordinate for the next vertex.
+inline void texCoord( float x, float y ) { glTexCoord2f( x, y ); }
+//! Used between calls to gl::begin() and gl::end(), sets the 2D texture coordinate for the next vertex.
+inline void texCoord( const Vec2f &v ) { glTexCoord2f( v.x, v.y ); }
+//! Used between calls to gl::begin() and gl::end(), sets the 3D texture coordinate for the next vertex.
+inline void texCoord( float x, float y, float z ) { glTexCoord3f( x, y, z ); }
+//! Used between calls to gl::begin() and gl::end(), sets the 3D texture coordinate for the next vertex.
+inline void texCoord( const Vec3f &v ) { glTexCoord3f( v.x, v.y, v.z ); }
 //! Sets the current color and the alpha value to 1.0
 inline void color( float r, float g, float b ) { glColor4f( r, g, b, 1.0f ); }
 //! Sets the current color and alpha value
@@ -167,6 +183,7 @@ inline void color( const ColorA8u &c ) { glColor4ub( c.r, c.g, c.b, c.a ); }
 inline void color( const Color &c ) { glColor4f( c.r, c.g, c.b, 1.0f ); }
 //! Sets the current color and alpha value
 inline void color( const ColorA &c ) { glColor4f( c.r, c.g, c.b, c.a ); }
+#endif // ! defined( CINDER_GLES )
 
 //! Enables the OpenGL State \a state. Equivalent to calling to glEnable( state );
 inline void enable( GLenum state ) { glEnable( state ); }
@@ -202,6 +219,9 @@ void enableDepthRead( bool enable = true );
 //! Enables writing to the depth buffer when \a enable.
 void enableDepthWrite( bool enable = true );
 
+//! Specifies the rasterized width of both aliased and antialiased lines.
+inline void lineWidth( float width ) { glLineWidth( width ); }
+
 //! Draws a line from \a start to \a end
 void drawLine( const Vec2f &start, const Vec2f &end );
 //! Draws a line from \a start to \a end
@@ -233,6 +253,15 @@ void drawStrokedRect( const Rectf &rect );
 void drawSolidRoundedRect( const Rectf &r, float cornerRadius, int numSegmentsPerCorner = 0 );
 void drawStrokedRoundedRect( const Rectf &r, float cornerRadius, int numSegmentsPerCorner = 0 );
 //! Renders a coordinate frame representation centered at the origin. Arrowheads are drawn at the end of each axis with radius \a headRadius and length \a headLength.
+//! Renders a solid triangle.
+void drawSolidTriangle( const Vec2f &pt1, const Vec2f &pt2, const Vec2f &pt3 );
+void drawSolidTriangle( const Vec2f pts[3] );
+//! Renders a textured triangle.
+void drawSolidTriangle( const Vec2f &pt1, const Vec2f &pt2, const Vec2f &pt3, const Vec2f &texPt1, const Vec2f &texPt2, const Vec2f &texPt3 );
+void drawSolidTriangle( const Vec2f pts[3], const Vec2f texCoord[3] );
+//! Renders a stroked triangle.
+void drawStrokedTriangle( const Vec2f &pt1, const Vec2f &pt2, const Vec2f &pt3 );	
+void drawStrokedTriangle( const Vec2f pts[3] );
 void drawCoordinateFrame( float axisLength = 1.0f, float headLength = 0.2f, float headRadius = 0.05f );
 //! Draws a vector starting at \a start and ending at \a end. An arrowhead is drawn at the end of radius \a headRadius and length \a headLength.
 void drawVector( const Vec3f &start, const Vec3f &end, float headLength = 0.2f, float headRadius = 0.05f );
@@ -251,8 +280,6 @@ void draw( const class Path2d &path2d, float approximationScale = 1.0f );
 //! Draws a Shape2d \a shape2d using approximation scale \a approximationScale. 1.0 corresponds to screenspace, 2.0 is double screen resolution, etc
 void draw( const class Shape2d &shape2d, float approximationScale = 1.0f );
 
-#if ! defined( CINDER_GLES )
-
 //! Draws a solid (filled) Path2d \a path2d using approximation scale \a approximationScale. 1.0 corresponds to screenspace, 2.0 is double screen resolution, etc. Performance warning: This routine tesselates the polygon into triangles. Consider using Triangulator directly.
 void drawSolid( const class Path2d &path2d, float approximationScale = 1.0f );
 //! Draws a solid (filled) Shape2d \a shape2d using approximation scale \a approximationScale. 1.0 corresponds to screenspace, 2.0 is double screen resolution, etc. Performance warning: This routine tesselates the polygon into triangles. Consider using Triangulator directly.
@@ -268,24 +295,33 @@ void drawRange( const TriMesh2d &mesh, size_t startTriangle, size_t triangleCoun
 void draw( const TriMesh &mesh );
 //! Draws a range of triangles starting with triangle # \a startTriangle and a count of \a triangleCount from cinder::TriMesh \a mesh at the origin.
 void drawRange( const TriMesh &mesh, size_t startTriangle, size_t triangleCount );
+
+#if ! defined ( CINDER_GLES )
 //! Draws a cinder::gl::VboMesh \a mesh at the origin.
 void draw( const VboMesh &vbo );
+inline void draw( const VboMeshRef &vbo ) { draw( *vbo ); }
 //! Draws a range of vertices and elements of cinder::gl::VboMesh \a mesh at the origin. Default parameters for \a vertexStart and \a vertexEnd imply the VboMesh's full range of vertices.
 void drawRange( const VboMesh &vbo, size_t startIndex, size_t indexCount, int vertexStart = -1, int vertexEnd = -1 );
+inline void drawRange( const VboMeshRef &vbo, size_t startIndex, size_t indexCount, int vertexStart = -1, int vertexEnd = -1 ) { drawRange( *vbo, startIndex, indexCount, vertexStart, vertexEnd ); }
 //! Draws a range of elements from a cinder::gl::VboMesh \a vbo.
 void drawArrays( const VboMesh &vbo, GLint first, GLsizei count );
-//!	Draws a textured quad of size \a scale that is aligned with the vectors \a bbRight and \a bbUp at \a pos, rotated by \a rotationDegrees around the vector orthogonal to \a bbRight and \a bbUp.
-#endif // ! defined( CINDER_GLES )
+inline void drawArrays( const VboMeshRef &vbo, GLint first, GLsizei count ) { drawArrays( *vbo, first, count ); }
+#endif
 
+//!	Draws a textured quad of size \a scale that is aligned with the vectors \a bbRight and \a bbUp at \a pos, rotated by \a rotationDegrees around the vector orthogonal to \a bbRight and \a bbUp.	
 void drawBillboard( const Vec3f &pos, const Vec2f &scale, float rotationDegrees, const Vec3f &bbRight, const Vec3f &bbUp );
 //! Draws \a texture on the XY-plane
 void draw( const Texture &texture );
+inline void draw( const TextureRef &texture ) { draw( *texture ); }
 //! Draws \a texture on the XY-plane at \a pos
 void draw( const Texture &texture, const Vec2f &pos );
+inline void draw( const TextureRef &texture, const Vec2f &pos ) { draw( *texture, pos ); }
 //! Draws \a texture on the XY-plane in the rectangle defined by \a rect
 void draw( const Texture &texture, const Rectf &rect );
+inline void draw( const TextureRef &texture, const Rectf &rect ) { draw( *texture, rect ); }
 //! Draws the pixels inside \a srcArea of \a texture on the XY-plane in the rectangle defined by \a destRect
 void draw( const Texture &texture, const Area &srcArea, const Rectf &destRect );
+inline void draw( const TextureRef &texture, const Area &srcArea, const Rectf &destRect ) { draw( *texture, srcArea, destRect ); }
 
 //! Draws a string \a str with its lower left corner located at \a pos. Optional \a font and \a color affect the style.
 void drawString( const std::string &str, const Vec2f &pos, const ColorA &color = ColorA( 1, 1, 1, 1 ), Font font = Font() );
@@ -343,6 +379,12 @@ struct SaveFramebufferBinding {
 void initializeGlee();
 #endif
 
+class Exception : public cinder::Exception {
+};
+
+class ExceptionUnknownTarget : public Exception {
+};
+
 } } // namespace cinder::gl 
 
 //@{
@@ -361,11 +403,11 @@ inline void glTexCoord4f( const cinder::Vec4f &v ) { glTexCoord4f( v.x, v.y, v.z
 //inline void glMultiTexCoord2f( GLenum target, const cinder::Vec2f &v ) { glMultiTexCoord2f( target, v.x, v.y ); }
 //inline void glMultiTexCoord3f( GLenum target, const cinder::Vec3f &v ) { glMultiTexCoord3f( target, v.x, v.y, v.z ); }
 //inline void glMultiTexCoord4f( GLenum target, const cinder::Vec4f &v ) { glMultiTexCoord4f( target, v.x, v.y, v.z, v.w ); }
-#endif // ! defined( CINDER_GLES )
 inline void glTranslatef( const cinder::Vec3f &v ) { glTranslatef( v.x, v.y, v.z ); }
 inline void glScalef( const cinder::Vec3f &v ) { glScalef( v.x, v.y, v.z ); }
 inline void glRotatef( float angle, const cinder::Vec3f &v ) { glRotatef( angle, v.x, v.y, v.z ); }
 inline void glRotatef( const cinder::Quatf &quat ) { cinder::Vec3f axis; float angle; quat.getAxisAngle( &axis, &angle ); glRotatef( cinder::toDegrees( angle ), axis.x, axis.y, axis.z ); }
 inline void glMultMatrixf( const cinder::Matrix44f &m ) { glMultMatrixf( m.m ); }
 inline void glLoadMatrixf( const cinder::Matrix44f &m ) { glLoadMatrixf( m.m ); }
+#endif // ! defined( CINDER_GLES )
 //@}

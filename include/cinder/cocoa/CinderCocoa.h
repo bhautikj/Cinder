@@ -51,7 +51,7 @@ namespace cinder {
 
 namespace cinder { namespace cocoa {
 
-typedef std::shared_ptr<const struct __CFString> SafeCfString;
+typedef std::shared_ptr<struct __CFString> SafeCfString;
 
 //! Represents an exception-safe Cocoa NSString which behaves like a shared_ptr but can implicitly cast itself to NSString*
 class SafeNsString {
@@ -107,6 +107,9 @@ void safeCocoaRelease( void *nsObject );
 	\note CGBitmapContexts only support premultiplied alpha **/
 CGContextRef createCgBitmapContext( const Surface8u &surface );
 
+//! Returns the current CoreGraphics context for the active window. Requires the current Renderer to be a Renderer2d. Does not need to be released.
+CGContextRef getWindowContext();
+
 #if defined( CINDER_MAC )
 /** \brief Converts an NSBitmapImageRep into a cinder::Surface8u
 	If \a assumeOwnership the result will take ownership of \a rep and will destroy it upon the Surface's own destruction automatically.
@@ -125,9 +128,9 @@ std::string	convertNsString( NSString *str );
 //! Converts a cinder::URL into a CFURLRef. User must call CFRelease() to free the result.
 CFURLRef createCfUrl( const cinder::Url &url );
 
-//! Converts a std::string to a CFAttributedStringRef with attributes set for \a font and \a color. Assumes UTF8 encoding. User must call CFRelease() to free the result.
+//! Converts a std::string to a CFAttributedStringRef with attributes set for \a font and \a color. Assumes UTF8 encoding. User must call CFRelease() to free the result. Returns NULL on failure.
 CFAttributedStringRef createCfAttributedString( const std::string &str, const cinder::Font &font, const ColorA &color );
-//! Converts a std::string to a CFAttributedStringRef with attributes set for \a font and \a color. If \a ligate then ligatures will be used. Assumes UTF8 encoding. User must call CFRelease() to free the result.
+//! Converts a std::string to a CFAttributedStringRef with attributes set for \a font and \a color. If \a ligate then ligatures will be used. Assumes UTF8 encoding. User must call CFRelease() to free the result. Returns NULL on failure.
 CFAttributedStringRef createCfAttributedString( const std::string &str, const cinder::Font &font, const ColorA &color, bool ligate );
 
 //! Converts a cinder::Color to CGColor. User must call CGColorRelease() to free the result.

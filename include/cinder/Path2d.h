@@ -26,6 +26,7 @@
 #include "cinder/BSpline.h"
 #include "cinder/Rect.h"
 #include "cinder/Exception.h"
+#include "cinder/MatrixAffine2.h"
 
 #include <vector>
 
@@ -72,6 +73,11 @@ class Path2d {
 	
 	//! Scales the Path2d by \a amount.x on X and \a amount.y on Y around the center \a scaleCenter
 	void		scale( const Vec2f &amount, Vec2f scaleCenter = Vec2f::zero() );
+	//! Transforms the Path2d by \a matrix.
+	void		transform( const MatrixAffine2f &matrix );
+	//! Returns a copy transformed by \a matrix.
+	Path2d		transformCopy( const MatrixAffine2f &matrix ) const;
+
 
 	const std::vector<Vec2f>&	getPoints() const { return mPoints; }
 	std::vector<Vec2f>&			getPoints() { return mPoints; }
@@ -96,6 +102,11 @@ class Path2d {
 
 	//! Returns whether the point \a pt is contained within the boundaries of the path
 	bool	contains( const Vec2f &pt ) const;
+
+	static int		calcQuadraticBezierMonotoneRegions( const Vec2f p[3], float resultT[2] );
+	static Vec2f	calcQuadraticBezierPos( const Vec2f p[3], float t );
+	static int		calcCubicBezierMonotoneRegions( const Vec2f p[4], float resultT[4] );
+	static Vec2f	calcCubicBezierPos( const Vec2f p[4], float t );
 
 	friend class Shape2d;
 	friend std::ostream& operator<<( std::ostream &out, const Path2d &p );

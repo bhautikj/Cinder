@@ -19,7 +19,7 @@ class QuaternionAccumApp : public AppBasic {
   public:
 	void setup();
 	void update();
-	void resize( ResizeEvent event );
+	void resize();
 	void mouseDown( MouseEvent event );
 	
 	void createRandomBspline();
@@ -52,7 +52,7 @@ void QuaternionAccumApp::setup()
 	mLastTime = getElapsedSeconds();
 }
 
-void QuaternionAccumApp::resize( ResizeEvent event )
+void QuaternionAccumApp::resize()
 {
 	mCam = CameraPersp( getWindowWidth(), getWindowHeight(), 40.0f );
 	mCam.setPerspective( 40.0f, getWindowAspectRatio(), 0.1f, 100.0f );
@@ -90,16 +90,16 @@ void QuaternionAccumApp::drawPlane()
 	// draw the plane
 	gl::color( Color( 1, 1, 1 ) );
 	mPlaneTexture.enableAndBind();
-	glBegin( GL_QUADS );
-		glTexCoord2f( 0, 0 );
-		glVertex3f( -10.0f, 0.0f, -10.0f );
-		glTexCoord2f( 1, 0 );
-		glVertex3f( 10.0f, 0.0f, -10.0f );
-		glTexCoord2f( 1, 1 );
-		glVertex3f( 10.0f, 0.0f, 10.0f );
-		glTexCoord2f( 0, 1 );
-		glVertex3f( -10.0f, 0.0f, 10.0f );
-	glEnd();
+	gl::begin( GL_QUADS );
+		gl::texCoord( 0, 0 );
+		gl::vertex( -10.0f, 0.0f, -10.0f );
+		gl::texCoord( 1, 0 );
+		gl::vertex( 10.0f, 0.0f, -10.0f );
+		gl::texCoord( 1, 1 );
+		gl::vertex( 10.0f, 0.0f, 10.0f );
+		gl::texCoord( 0, 1 );
+		gl::vertex( -10.0f, 0.0f, 10.0f );
+	gl::end();
 	mPlaneTexture.disable();
 }
 
@@ -108,12 +108,12 @@ void QuaternionAccumApp::drawSpline()
 	const int numSegments = 100;
 	gl::color( ColorA( 0.8f, 0.2f, 0.8f, 0.5f ) );
 	glLineWidth( 2.0f );
-	glBegin( GL_LINE_STRIP );
+	gl::begin( GL_LINE_STRIP );
 	for( int s = 0; s <= numSegments; ++s ) {
 		float t = s / (float)numSegments;
 		gl::vertex( mSpline.getPosition( t ) + Vec3f( 0.0f, 0.5f, 0.0f ) );
 	}
-	glEnd();
+	gl::end();
 }
 
 void QuaternionAccumApp::drawBall()
