@@ -268,23 +268,23 @@ void GlslProg::uniform( const std::string &name, const Matrix44f &data, bool tra
 	glUniformMatrix4fv( loc, 1, ( transpose ) ? GL_TRUE : GL_FALSE, data.m );
 }
 
-void GlslProg::uniform( const std::string &name, const Matrix22f *data, int count, bool transpose )
-{
-	GLint loc = getUniformLocation( name );
-	glUniformMatrix2fv( loc, count, ( transpose ) ? GL_TRUE : GL_FALSE, data->m );
-}
+// void GlslProg::uniform( const std::string &name, const Matrix22f *data, int count, bool transpose )
+// {
+// 	GLint loc = getUniformLocation( name );
+// 	glUniformMatrix2fv( loc, count, ( transpose ) ? GL_TRUE : GL_FALSE, data->m );
+// }
 
-void GlslProg::uniform( const std::string &name, const Matrix33f *data, int count, bool transpose )
-{
-	GLint loc = getUniformLocation( name );
-	glUniformMatrix3fv( loc, count, ( transpose ) ? GL_TRUE : GL_FALSE, data->m );
-}
+// void GlslProg::uniform( const std::string &name, const Matrix33f *data, int count, bool transpose )
+// {
+// 	GLint loc = getUniformLocation( name );
+// 	glUniformMatrix3fv( loc, count, ( transpose ) ? GL_TRUE : GL_FALSE, data->m );
+// }
 
-void GlslProg::uniform( const std::string &name, const Matrix44f *data, int count, bool transpose )
-{
-	GLint loc = getUniformLocation( name );
-	glUniformMatrix4fv( loc, count, ( transpose ) ? GL_TRUE : GL_FALSE, data->m );
-}
+// void GlslProg::uniform( const std::string &name, const Matrix44f *data, int count, bool transpose )
+// {
+// 	GLint loc = getUniformLocation( name );
+// 	glUniformMatrix4fv( loc, count, ( transpose ) ? GL_TRUE : GL_FALSE, data->m );
+// }
 
 GLint GlslProg::getUniformLocation( const std::string &name )
 {
